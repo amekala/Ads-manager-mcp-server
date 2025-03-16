@@ -1,85 +1,32 @@
 #!/usr/bin/env node
 
-const https = require('https');
-const EventSource = require('eventsource');
+const { spawn } = require('child_process');
+const net = require('net');
+const readline = require('readline');
 
 // Create a session ID for tracking
 const sessionId = Math.random().toString(36).substring(2, 15);
-console.error(`Starting SSE proxy with session ID: ${sessionId}`);
+console.error(`Starting MCP server with session ID: ${sessionId}`);
 
-// Keep the process alive
-setInterval(() => {
-  // Heartbeat to keep the process running
-  console.error('Heartbeat...');
-}, 30000);
-
-// Connect to the SSE endpoint
-const url = 'https://mcp-server-sync-abhilashreddi.replit.app/mcp/sse';
-const headers = {
-  'Accept': 'text/event-stream',
-  'Cache-Control': 'no-cache',
-  'Authorization': 'mDT3YY27XvHYeqvthyWenpI8WE78Ljxf'
-};
-
-const eventSource = new EventSource(url, { headers });
-
-eventSource.onopen = () => {
-  console.error('Connected to SSE endpoint');
-};
-
-eventSource.onerror = (err) => {
-  console.error('SSE connection error:', err);
-  // Don't exit on error, try to recover
-  console.error('Attempting to recover from error...');
-};
-
-// Handle 'endpoint' event from SSE
-eventSource.addEventListener('endpoint', (event) => {
-  console.error(`Received endpoint: ${event.data}`);
+// Create a server to handle MCP protocol
+const server = net.createServer((socket) => {
+  console.error('Client connected');
   
-  // Parse and handle the endpoint
-  const endpoint = event.data;
+  // Prepare to read messages from the client
+  const rl = readline.createInterface({
+    input: socket,
+    output: socket,
+    terminal: false
+  });
   
-  // Start handling MCP protocol
-  handleMcpProtocol();
-});
-
-// Handle MCP protocol
-function handleMcpProtocol() {
-  // Start listening for client messages on stdin
-  process.stdin.on('data', async (chunk) => {
-    const message = chunk.toString().trim();
-    if (!message) return;
-    
+  // Handle messages from the client
+  rl.on('line', (line) => {
     try {
-      console.error(`Received message: ${message}`);
-      const request = JSON.parse(message);
+      console.error(`Received line: ${line}`);
+      const message = JSON.parse(line);
       
-      // Handle different methods
-      let response;
-      
-      if (request.method === 'initialize') {
-        response = handleInitialize(request);
-      } else if (request.method === 'tools/list') {
-        response = handleToolsList(request);
-      } else if (request.method === 'tools/call') {
-        response = handleToolsCall(request);
-      } else {
-        response = {
-          error: {
-            code: -32601,
-            message: `Method not found: ${request.method}`
-          },
-          jsonrpc: '2.0',
-          id: request.id
-        };
-      }
-      
-      // Send response
-      console.log(JSON.stringify(response));
-      
-      // Keep the connection open after sending the response
-      console.error('Response sent, keeping connection open...');
+      // Process the message
+      handleMessage(message, socket);
     } catch (error) {
       console.error('Error processing message:', error);
       
@@ -93,19 +40,51 @@ function handleMcpProtocol() {
         id: null
       };
       
-      console.log(JSON.stringify(errorResponse));
+      socket.write(JSON.stringify(errorResponse) + '\n');
     }
   });
   
-  // Notify that we're ready
-  console.error('MCP Proxy ready to receive messages');
+  // Handle client disconnection
+  socket.on('close', () => {
+    console.error('Client disconnected');
+  });
+  
+  // Handle errors
+  socket.on('error', (err) => {
+    console.error('Socket error:', err);
+  });
+});
+
+// Handle MCP protocol messages
+function handleMessage(message, socket) {
+  console.error(`Processing message: ${JSON.stringify(message)}`);
+  
+  if (message.method === 'initialize') {
+    handleInitialize(message, socket);
+  } else if (message.method === 'tools/list') {
+    handleToolsList(message, socket);
+  } else if (message.method === 'tools/call') {
+    handleToolsCall(message, socket);
+  } else {
+    // Method not supported
+    const response = {
+      error: {
+        code: -32601,
+        message: `Method not found: ${message.method}`
+      },
+      jsonrpc: '2.0',
+      id: message.id
+    };
+    
+    socket.write(JSON.stringify(response) + '\n');
+  }
 }
 
 // Handle initialize method
-function handleInitialize(request) {
-  console.error('Handling initialize method');
+function handleInitialize(message, socket) {
+  console.error(`Handling initialize for client ${message.id}`);
   
-  return {
+  const response = {
     result: {
       serverInfo: {
         name: 'Amazon Ads Manager',
@@ -118,15 +97,18 @@ function handleInitialize(request) {
       }
     },
     jsonrpc: '2.0',
-    id: request.id
+    id: message.id
   };
+  
+  socket.write(JSON.stringify(response) + '\n');
+  console.error(`Initialize response sent to client ${message.id}`);
 }
 
 // Handle tools/list method
-function handleToolsList(request) {
-  console.error('Handling tools/list method');
+function handleToolsList(message, socket) {
+  console.error(`Handling tools/list for client ${message.id}`);
   
-  return {
+  const response = {
     result: {
       tools: [
         {
@@ -164,22 +146,25 @@ function handleToolsList(request) {
       ]
     },
     jsonrpc: '2.0',
-    id: request.id
+    id: message.id
   };
+  
+  socket.write(JSON.stringify(response) + '\n');
+  console.error(`Tools/list response sent to client ${message.id}`);
 }
 
 // Handle tools/call method
-function handleToolsCall(request) {
-  const params = request.params;
-  console.error(`Handling tools/call method with params: ${JSON.stringify(params)}`);
+function handleToolsCall(message, socket) {
+  const params = message.params;
+  console.error(`Handling tools/call with params: ${JSON.stringify(params)}`);
   
-  return {
+  const response = {
     result: {
       content: [
         {
           type: 'text',
           text: JSON.stringify({
-            message: 'This is a mock response from the SSE proxy',
+            message: 'This is a mock response from the MCP server',
             toolName: params.name,
             args: params.arguments
           }, null, 2)
@@ -187,27 +172,46 @@ function handleToolsCall(request) {
       ]
     },
     jsonrpc: '2.0',
-    id: request.id
+    id: message.id
   };
+  
+  socket.write(JSON.stringify(response) + '\n');
+  console.error(`Tools/call response sent to client ${message.id}`);
 }
 
-// Handle process shutdown
+// Start the server
+const PORT = process.env.MCP_PORT || 7891;
+server.listen(PORT, '127.0.0.1', () => {
+  console.error(`MCP server listening on port ${PORT}`);
+  
+  // Signal that we're ready - this allows Claude to connect to us
+  console.log(JSON.stringify({
+    port: PORT,
+    protocol: 'mcp'
+  }));
+});
+
+// Handle server errors
+server.on('error', (err) => {
+  console.error('Server error:', err);
+});
+
+// Handle process exit
+process.on('exit', () => {
+  console.error('Process exiting, shutting down server');
+  server.close();
+});
+
+// Handle signals
 process.on('SIGINT', () => {
-  console.error('Shutting down SSE proxy');
-  eventSource.close();
-  process.exit(0);
+  console.error('Received SIGINT, shutting down server');
+  server.close(() => {
+    process.exit(0);
+  });
 });
 
-// Make the process unexitable unless explicitly terminated
-process.on('exit', (code) => {
-  console.error(`Process is attempting to exit with code ${code}`);
-  if (code !== 0) {
-    console.error('Preventing exit, keeping proxy alive...');
-  }
-});
-
-// Handle uncaught exceptions without crashing
+// Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('Uncaught exception:', err);
-  console.error('Continuing to run despite error...');
+  // Don't exit, try to keep the server running
 }); 

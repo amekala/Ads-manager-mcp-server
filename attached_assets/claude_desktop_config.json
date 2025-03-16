@@ -11,6 +11,7 @@
       ],
       "env": {
         "DEBUG": "true",
+        "MCP_PORT": "7891",
         "MCP_PROTOCOL_VERSION": "2024-11-05"
       }
     }
