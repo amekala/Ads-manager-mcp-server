@@ -4,9 +4,10 @@ import { z } from "zod";
 import { db, pool } from "../db";
 import { advertisingProfiles, campaigns, adGroups, metrics, users } from "@shared/schema";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
+import { SQL } from "drizzle-orm";
 
 // Create MCP server instance
-export const mcpServer = new McpServer({
+const mcpServer = new McpServer({
   name: "Amazon-Ads-MCP",
   version: "1.0.0"
 });
@@ -110,22 +111,19 @@ mcpServer.tool(
   },
   async ({ campaignId, dateRange }) => {
     try {
-      const query = db.select({
-        campaign: campaigns,
-        metrics: metrics
-      })
-      .from(campaigns)
-      .leftJoin(metrics, eq(metrics.campaignId, campaigns.campaignId))
-      .where(eq(campaigns.campaignId, campaignId));
+      let conditions: SQL[] = [eq(campaigns.campaignId, campaignId)];
 
       if (dateRange) {
-        query.where(and(
+        conditions.push(
           gte(metrics.date, new Date(dateRange.start)),
           lte(metrics.date, new Date(dateRange.end))
-        ));
+        );
       }
 
-      const results = await query;
+      const results = await db.select()
+        .from(campaigns)
+        .leftJoin(metrics, eq(metrics.campaignId, campaigns.campaignId))
+        .where(and(...conditions));
 
       return {
         content: [{
@@ -185,23 +183,24 @@ mcpServer.tool(
   },
   async ({ profileId }) => {
     try {
-      // Get all campaigns and their performance metrics
       const results = await db.select()
         .from(campaigns)
         .leftJoin(metrics, eq(metrics.campaignId, campaigns.campaignId))
         .where(eq(campaigns.profileId, profileId))
         .orderBy(desc(metrics.roas));
 
-      // Simple budget optimization logic
-      const analysis = results.map(campaign => ({
-        campaignId: campaign.campaignId,
-        name: campaign.name,
-        currentBudget: campaign.budget,
-        roas: campaign.roas,
-        recommendation: campaign.roas > 2 ? 'Increase budget' : 
-                       campaign.roas < 1 ? 'Decrease budget' : 
-                       'Maintain budget'
-      }));
+      const analysis = results.map(result => {
+        const roas = Number(result.metrics?.roas ?? 0);
+        return {
+          campaignId: result.campaigns.campaignId,
+          name: result.campaigns.name,
+          currentBudget: result.campaigns.budget,
+          roas: roas,
+          recommendation: roas > 2 ? 'Increase budget' : 
+                         roas < 1 ? 'Decrease budget' : 
+                         'Maintain budget'
+        };
+      });
 
       return {
         content: [{
@@ -373,3 +372,6 @@ mcpServer.tool(
     }
   }
 );
+
+// Export only once
+export { mcpServer };

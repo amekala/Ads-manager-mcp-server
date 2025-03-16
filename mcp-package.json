@@ -42,5 +42,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yourusername/amazon-ads-mcp"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
