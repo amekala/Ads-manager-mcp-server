@@ -37,11 +37,11 @@
     "claude",
     "ai"
   ],
-  "author": "Your Name",
+  "author": "Abhilash Mekala",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/amazon-ads-mcp"
+    "url": "https://github.com/amekala/Ads-mcp-server.git"
   },
   "publishConfig": {
     "access": "public"

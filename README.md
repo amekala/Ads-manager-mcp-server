@@ -7,7 +7,7 @@ An MCP server that provides access to Amazon Advertising data through standardiz
 This MCP server connects to your Amazon Advertising data and enables natural language interactions through Claude Desktop. It provides:
 
 - Campaign performance analysis
-- Ad group management
+- Ad group management 
 - Metrics tracking and visualization
 - AI-powered recommendations
 
@@ -29,7 +29,7 @@ DATABASE_URL=your_postgresql_database_url
 
 1. Clone and install dependencies:
 ```bash
-git clone <repository-url>
+git clone https://github.com/amekala/Ads-mcp-server.git
 cd amazon-ads-mcp
 npm install
 ```
@@ -45,7 +45,7 @@ npm run dev
 curl http://localhost:5000/health
 # Expected: {"status":"ok"}
 
-# Test root endpoint
+# Test root endpoint  
 curl http://localhost:5000/
 # Expected: {"status":"ok","name":"Amazon Ads MCP Server","version":"1.0.0"}
 
@@ -57,11 +57,23 @@ curl -H "Authorization: Bearer YOUR_API_KEY" http://localhost:5000/mcp/sse
 4. Configure Claude Desktop for local testing:
 ```json
 {
-  "mcp": {
-    "endpoint": "http://localhost:5000/mcp",
-    "transport": "sse",
-    "headers": {
-      "Authorization": "Bearer YOUR_API_KEY"
+  "globalShortcut": "",
+  "mcpServers": {
+    "amazon-ads": {
+      "name": "Amazon Ads Assistant",
+      "version": "1.0.0", 
+      "description": "MCP Server for Amazon Advertising",
+      "command": "curl",
+      "args": [
+        "-N",
+        "--no-buffer",
+        "--max-time", "0",
+        "-H", "Accept: text/event-stream",
+        "-H", "Cache-Control: no-cache",
+        "-H", "Connection: keep-alive",
+        "-H", "Authorization: Bearer YOUR_API_KEY",
+        "http://localhost:5000/mcp/sse"
+      ]
     }
   }
 }
@@ -69,80 +81,28 @@ curl -H "Authorization: Bearer YOUR_API_KEY" http://localhost:5000/mcp/sse
 
 ## Production Setup
 
-1. Install and start the MCP server:
-```bash
-# Install the package
-npm install amazon-ads-mcp
-
-# Start the server
-npm start
-```
-
-2. Configure your environment:
-```bash
-# Required environment variables
-DATABASE_URL=your_postgresql_database_url
-```
-
-3. Configure Claude Desktop:
-```json
-{
-  "name": "Amazon Ads Assistant",
-  "version": "1.0.0",
-  "description": "MCP configuration for Amazon Advertising data analysis",
-  "mcp": {
-    "endpoint": "https://your-server-url/mcp",
-    "transport": "sse",
-    "headers": {
-      "Authorization": "Bearer YOUR_AMAZON_ADS_API_TOKEN"
-    }
-  }
-}
-```
-
-### Verifying the Setup
-
-1. Test server health:
-```bash
-curl http://localhost:5000/
-# Expected response:
-# {"status":"ok","name":"Amazon Ads MCP Server","version":"1.0.0"}
-```
-
-2. Test with Claude Desktop:
-- Load your config file in Claude Desktop
-- Try example queries like:
-  ```
-  Show me the database schema
-  Analyze performance for campaign XYZ
-  Get budget recommendations for profile ABC
-  ```
-
-## Publishing to npm
-
-1. Login to npm:
-```bash
-npm login
-```
-
-2. Build and publish:
-```bash
-npm run build
-npm publish
-```
-
-## Production URL
-
 The MCP server is deployed at: `https://mcp-server-sync-abhilashreddi.replit.app`
 
 For production use, update your Claude Desktop config to use:
 ```json
 {
-  "mcp": {
-    "endpoint": "https://mcp-server-sync-abhilashreddi.replit.app/mcp",
-    "transport": "sse",
-    "headers": {
-      "Authorization": "Bearer YOUR_API_KEY"
+  "globalShortcut": "",
+  "mcpServers": {
+    "amazon-ads": {
+      "name": "Amazon Ads Assistant",
+      "version": "1.0.0",
+      "description": "MCP Server for Amazon Advertising",
+      "command": "curl",
+      "args": [
+        "-N", 
+        "--no-buffer",
+        "--max-time", "0",
+        "-H", "Accept: text/event-stream",
+        "-H", "Cache-Control: no-cache",
+        "-H", "Connection: keep-alive",
+        "-H", "Authorization: Bearer YOUR_API_KEY",
+        "https://mcp-server-sync-abhilashreddi.replit.app/mcp/sse"
+      ]
     }
   }
 }
@@ -152,7 +112,7 @@ For production use, update your Claude Desktop config to use:
 
 ### Data Access
 - `getCampaignPerformance`: Analyze campaign metrics
-- `getAdGroupMetrics`: Review ad group performance
+- `getAdGroupMetrics`: Review ad group performance  
 - `getAdvertisingProfile`: Access profile information
 
 ### Analysis
@@ -172,7 +132,7 @@ Here are some example queries you can try with Claude Desktop:
 # Database Schema
 Show me the database schema
 
-# Campaign Analysis
+# Campaign Analysis  
 What's the performance of campaign ABC123?
 How is campaign XYZ performing this month?
 
@@ -189,8 +149,6 @@ Show performance trends for profile P789 over the last 30 days
 What are the impression trends for my campaigns?
 ```
 
-These queries demonstrate the natural language capabilities enabled by the MCP server.
-
 ## Security & Database Access
 
 The MCP server handles all database connections internally using secure PostgreSQL credentials. These credentials are:
@@ -199,27 +157,10 @@ The MCP server handles all database connections internally using secure PostgreS
 - Managed through the Neon serverless driver
 - Protected by row-level security
 
-## Troubleshooting
-
-If you encounter issues:
-
-1. Check environment variables:
-```bash
-# Ensure DATABASE_URL is set
-echo $DATABASE_URL
-```
-
-2. Verify the server is running:
-```bash
-curl http://localhost:5000/health
-# Expected: {"status":"ok"}
-```
-
-3. Check Claude Desktop connection:
-- Ensure your API token is correctly set in the config
-- Verify the endpoint URL matches exactly
-- Check for any error messages in Claude Desktop
-
 ## License
 
 MIT
+
+## Author
+
+Abhilash Mekala
