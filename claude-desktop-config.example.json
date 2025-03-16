@@ -1,0 +1,23 @@
+{
+  "name": "Amazon Ads Assistant",
+  "version": "1.0.0",
+  "description": "MCP configuration for Amazon Advertising data analysis",
+  "mcp": {
+    "endpoint": "http://localhost:5000/mcp",
+    "transport": "sse",
+    "headers": {
+      "Authorization": "Bearer YOUR_AMAZON_ADS_API_TOKEN"
+    }
+  },
+  "instructions": [
+    "1. Replace localhost:5000 with your deployed MCP server URL",
+    "2. Replace YOUR_AMAZON_ADS_API_TOKEN with the token from your Amazon Ads web application",
+    "3. The MCP server handles database credentials internally - no additional configuration needed"
+  ],
+  "capabilities": [
+    "Campaign performance analysis",
+    "Ad group metrics tracking",
+    "Natural language queries for advertising data",
+    "Budget optimization recommendations"
+  ]
+}
