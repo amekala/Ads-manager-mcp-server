@@ -5,13 +5,17 @@
       "name": "Ads Manager MCP Server",
       "version": "1.0.4",
       "description": "MCP Server for Amazon Advertising data analysis",
-      "transport": "sse",
-      "endpoint": "https://mcp-server-sync-abhilashreddi.replit.app/mcp/sse",
-      "remote": true,
-      "command": "/usr/bin/true",
-      "headers": {
-        "Authorization": "mDT3YY27XvHYeqvthyWenpI8WE78Ljxf"
-      }
+      "command": "/usr/bin/curl",
+      "args": [
+        "-N",
+        "--no-buffer",
+        "--max-time", "0",
+        "-H", "Accept: text/event-stream",
+        "-H", "Cache-Control: no-cache",
+        "-H", "Connection: keep-alive",
+        "-H", "Authorization: mDT3YY27XvHYeqvthyWenpI8WE78Ljxf",
+        "https://mcp-server-sync-abhilashreddi.replit.app/mcp/sse"
+      ]
     }
   },
   "capabilities": {
