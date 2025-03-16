@@ -2,12 +2,14 @@
   "name": "amazon-ads-mcp",
   "version": "1.0.0",
   "description": "MCP server for Amazon Advertising data access",
-  "main": "dist/index.js",
+  "main": "dist/server/index.js",
+  "types": "dist/server/index.d.ts",
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/index.js",
-    "dev": "tsx server/index.ts"
+    "start": "node dist/server/index.js",
+    "dev": "tsx server/index.ts",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",
@@ -26,6 +28,19 @@
   },
   "files": [
     "dist",
-    "README.md"
-  ]
+    "README.md",
+    "claude-desktop-config.example.json"
+  ],
+  "keywords": [
+    "mcp",
+    "amazon-advertising",
+    "claude",
+    "ai"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/amazon-ads-mcp"
+  }
 }

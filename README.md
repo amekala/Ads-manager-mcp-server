@@ -11,20 +11,87 @@ This MCP server connects to your Amazon Advertising data and enables natural lan
 - Metrics tracking and visualization
 - AI-powered recommendations
 
+## Installation
+
+```bash
+npm install amazon-ads-mcp
+```
+
+## Local Development
+
+### Prerequisites
+```bash
+# Required environment variables
+DATABASE_URL=your_postgresql_database_url
+```
+
+### Local Testing Steps
+
+1. Clone and install dependencies:
+```bash
+git clone <repository-url>
+cd amazon-ads-mcp
+npm install
+```
+
+2. Start the development server:
+```bash
+npm run dev
+```
+
+3. Test the endpoints:
+```bash
+# Test health endpoint
+curl http://localhost:5000/health
+# Expected: {"status":"ok"}
+
+# Test root endpoint
+curl http://localhost:5000/
+# Expected: {"status":"ok","name":"Amazon Ads MCP Server","version":"1.0.0"}
+
+# Test MCP endpoint (requires API key)
+curl -H "Authorization: Bearer YOUR_API_KEY" http://localhost:5000/mcp/sse
+# Expected: SSE stream connection
+```
+
+4. Configure Claude Desktop for local testing:
+```json
+{
+  "mcp": {
+    "endpoint": "http://localhost:5000/mcp",
+    "transport": "sse",
+    "headers": {
+      "Authorization": "Bearer YOUR_API_KEY"
+    }
+  }
+}
+```
+
 ## Production Setup
 
-The MCP server is deployed at: `https://mcp-server-sync-abhilashreddi.replit.app`
+1. Install and start the MCP server:
+```bash
+# Install the package
+npm install amazon-ads-mcp
 
-### Claude Desktop Configuration
+# Start the server
+npm start
+```
 
-1. Create a `claude-desktop-config.json`:
+2. Configure your environment:
+```bash
+# Required environment variables
+DATABASE_URL=your_postgresql_database_url
+```
+
+3. Configure Claude Desktop:
 ```json
 {
   "name": "Amazon Ads Assistant",
   "version": "1.0.0",
   "description": "MCP configuration for Amazon Advertising data analysis",
   "mcp": {
-    "endpoint": "https://mcp-server-sync-abhilashreddi.replit.app/mcp",
+    "endpoint": "https://your-server-url/mcp",
     "transport": "sse",
     "headers": {
       "Authorization": "Bearer YOUR_AMAZON_ADS_API_TOKEN"
@@ -33,25 +100,53 @@ The MCP server is deployed at: `https://mcp-server-sync-abhilashreddi.replit.app
 }
 ```
 
-2. Replace `YOUR_AMAZON_ADS_API_TOKEN` with your token from the Amazon Ads web application
-
 ### Verifying the Setup
 
 1. Test server health:
 ```bash
-curl https://mcp-server-sync-abhilashreddi.replit.app/
+curl http://localhost:5000/
 # Expected response:
 # {"status":"ok","name":"Amazon Ads MCP Server","version":"1.0.0"}
 ```
 
 2. Test with Claude Desktop:
 - Load your config file in Claude Desktop
-- Try commands like:
+- Try example queries like:
   ```
   Show me the database schema
   Analyze performance for campaign XYZ
   Get budget recommendations for profile ABC
   ```
+
+## Publishing to npm
+
+1. Login to npm:
+```bash
+npm login
+```
+
+2. Build and publish:
+```bash
+npm run build
+npm publish
+```
+
+## Production URL
+
+The MCP server is deployed at: `https://mcp-server-sync-abhilashreddi.replit.app`
+
+For production use, update your Claude Desktop config to use:
+```json
+{
+  "mcp": {
+    "endpoint": "https://mcp-server-sync-abhilashreddi.replit.app/mcp",
+    "transport": "sse",
+    "headers": {
+      "Authorization": "Bearer YOUR_API_KEY"
+    }
+  }
+}
+```
 
 ## Available MCP Tools
 
@@ -69,7 +164,7 @@ curl https://mcp-server-sync-abhilashreddi.replit.app/
 - `schema`: Inspect available data structures
 - `query`: Execute custom data queries
 
-### Example MCP Queries
+## Example MCP Queries
 
 Here are some example queries you can try with Claude Desktop:
 
@@ -94,37 +189,37 @@ Show performance trends for profile P789 over the last 30 days
 What are the impression trends for my campaigns?
 ```
 
-These queries demonstrate the natural language capabilities enabled by the MCP server. The server handles translating these queries into appropriate database operations while maintaining security.
-
+These queries demonstrate the natural language capabilities enabled by the MCP server.
 
 ## Security & Database Access
 
 The MCP server handles all database connections internally using secure PostgreSQL credentials. These credentials are:
-- Configured during deployment
+- Set via DATABASE_URL environment variable
 - Never exposed to clients
 - Managed through the Neon serverless driver
 - Protected by row-level security
-
-Clients interact with the data only through the MCP tools, ensuring secure and controlled access to the advertising data.
 
 ## Troubleshooting
 
 If you encounter issues:
 
-1. Verify the server is running:
+1. Check environment variables:
 ```bash
-curl https://mcp-server-sync-abhilashreddi.replit.app/health
+# Ensure DATABASE_URL is set
+echo $DATABASE_URL
+```
+
+2. Verify the server is running:
+```bash
+curl http://localhost:5000/health
 # Expected: {"status":"ok"}
 ```
 
-2. Check Claude Desktop connection:
+3. Check Claude Desktop connection:
 - Ensure your API token is correctly set in the config
 - Verify the endpoint URL matches exactly
 - Check for any error messages in Claude Desktop
 
-## Support
+## License
 
-For issues with:
-- MCP server access: Check server status and your network connection
-- Data queries: Verify your API token and permissions
-- Claude Desktop: Ensure your config file is properly formatted
+MIT

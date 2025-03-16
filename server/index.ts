@@ -36,7 +36,7 @@ app.use((req, res, next) => {
     });
   });
 
-  const port = 5000;
+  const port = process.env.PORT || 5000;
   server.listen({
     port,
     host: "0.0.0.0",
@@ -45,3 +45,7 @@ app.use((req, res, next) => {
     log(`MCP server running on port ${port}`);
   });
 })();
+
+// Export MCP server for npm package
+export { mcpServer } from "./mcp";
+export * from "@shared/schema";

@@ -7,9 +7,21 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./dist",
-    "rootDir": "./server",
-    "declaration": true
+    "rootDir": ".",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    }
   },
-  "include": ["server/**/*"],
-  "exclude": ["client", "node_modules"]
+  "include": [
+    "server/**/*",
+    "shared/**/*"
+  ],
+  "exclude": [
+    "client",
+    "node_modules",
+    "dist"
+  ]
 }
