@@ -7,7 +7,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.7.0",
     "eventsource": "^2.0.2"
   }
 } 

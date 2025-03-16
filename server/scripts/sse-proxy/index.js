@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 
 const https = require('https');
-const { EventSource } = require('eventsource');
-const { JSONRPCServer } = require('@modelcontextprotocol/sdk');
-
-// Initialize MCP server
-const server = new JSONRPCServer();
+const EventSource = require('eventsource');
 
 // Create a session ID for tracking
 const sessionId = Math.random().toString(36).substring(2, 15);
@@ -36,16 +32,70 @@ eventSource.addEventListener('endpoint', (event) => {
   // Parse and handle the endpoint
   const endpoint = event.data;
   
-  // Register methods with the MCP server
-  registerMethods(endpoint);
+  // Start handling MCP protocol
+  handleMcpProtocol();
 });
 
-// Register MCP methods
-function registerMethods(endpoint) {
-  // Register initialize method
-  server.method('initialize', async (params) => {
-    console.error('Received initialize request with params:', JSON.stringify(params));
-    return {
+// Handle MCP protocol
+function handleMcpProtocol() {
+  // Start listening for client messages on stdin
+  process.stdin.on('data', async (chunk) => {
+    const message = chunk.toString().trim();
+    if (!message) return;
+    
+    try {
+      console.error(`Received message: ${message}`);
+      const request = JSON.parse(message);
+      
+      // Handle different methods
+      let response;
+      
+      if (request.method === 'initialize') {
+        response = handleInitialize(request);
+      } else if (request.method === 'tools/list') {
+        response = handleToolsList(request);
+      } else if (request.method === 'tools/call') {
+        response = handleToolsCall(request);
+      } else {
+        response = {
+          error: {
+            code: -32601,
+            message: `Method not found: ${request.method}`
+          },
+          jsonrpc: '2.0',
+          id: request.id
+        };
+      }
+      
+      // Send response
+      console.log(JSON.stringify(response));
+    } catch (error) {
+      console.error('Error processing message:', error);
+      
+      // Send error response
+      const errorResponse = {
+        error: {
+          code: -32700,
+          message: 'Parse error'
+        },
+        jsonrpc: '2.0',
+        id: null
+      };
+      
+      console.log(JSON.stringify(errorResponse));
+    }
+  });
+  
+  // Notify that we're ready
+  console.error('MCP Proxy ready to receive messages');
+}
+
+// Handle initialize method
+function handleInitialize(request) {
+  console.error('Handling initialize method');
+  
+  return {
+    result: {
       serverInfo: {
         name: 'Amazon Ads Manager',
         version: '1.0.4',
@@ -55,12 +105,18 @@ function registerMethods(endpoint) {
         resources: ['schema', 'metrics', 'campaigns', 'adGroups'],
         tools: ['analyzeCampaignPerformance', 'analyzeAdGroupPerformance', 'optimizeBudget', 'query']
       }
-    };
-  });
+    },
+    jsonrpc: '2.0',
+    id: request.id
+  };
+}
 
-  // Register tools/list method
-  server.method('tools/list', async () => {
-    return {
+// Handle tools/list method
+function handleToolsList(request) {
+  console.error('Handling tools/list method');
+  
+  return {
+    result: {
       tools: [
         {
           name: 'analyzeCampaignPerformance',
@@ -95,52 +151,33 @@ function registerMethods(endpoint) {
           }
         }
       ]
-    };
-  });
+    },
+    jsonrpc: '2.0',
+    id: request.id
+  };
+}
 
-  // Forward tool call requests to the original API
-  server.method('tools/call', async (params) => {
-    console.error(`Received tools/call with params: ${JSON.stringify(params)}`);
-    
-    try {
-      // Here you would typically forward the request to the actual API
-      // For now, we'll return a mock response
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              message: 'This is a mock response from the SSE proxy',
-              toolName: params.name,
-              args: params.arguments
-            }, null, 2)
-          }
-        ]
-      };
-    } catch (error) {
-      console.error('Error in tools/call:', error);
-      throw error;
-    }
-  });
-
-  // Start listening for client messages
-  process.stdin.on('data', async (chunk) => {
-    const message = chunk.toString().trim();
-    if (!message) return;
-    
-    try {
-      console.error(`Received message: ${message}`);
-      const response = await server.receive(message);
-      if (response) {
-        console.log(response);
-      }
-    } catch (error) {
-      console.error('Error processing message:', error);
-    }
-  });
-
-  // Notify that we're ready
-  console.error('MCP Proxy ready to receive messages');
+// Handle tools/call method
+function handleToolsCall(request) {
+  const params = request.params;
+  console.error(`Handling tools/call method with params: ${JSON.stringify(params)}`);
+  
+  return {
+    result: {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({
+            message: 'This is a mock response from the SSE proxy',
+            toolName: params.name,
+            args: params.arguments
+          }, null, 2)
+        }
+      ]
+    },
+    jsonrpc: '2.0',
+    id: request.id
+  };
 }
 
 // Handle process shutdown
