@@ -7,6 +7,11 @@ import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
+  // Add simple health check endpoint
+  app.get("/health", (_req, res) => {
+    res.json({ status: "ok" });
+  });
+
   // Setup SSE endpoint for MCP
   app.get("/mcp/sse", async (req, res) => {
     const transport = new SSEServerTransport("/mcp/messages", res);

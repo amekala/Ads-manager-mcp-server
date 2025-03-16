@@ -1,0 +1,133 @@
+# Amazon Ads MCP Server Implementation Plan
+
+## Overall Project Context
+
+### The Amazon Advertising Challenge
+
+Amazon sellers and brands face increasingly complex challenges managing their advertising campaigns. With multiple campaign types, constantly changing metrics, and competitive marketplaces, advertisers need both powerful analytics and actionable insights. Many struggle with:
+
+- Understanding campaign performance across different products
+- Optimizing budgets based on performance data
+- Identifying trends and opportunities in complex datasets
+- Making data-driven decisions quickly without technical expertise
+
+### Our Integrated Solution
+
+We're building a comprehensive ecosystem for Amazon advertisers consisting of two key components:
+
+1. **Web Application** - The central hub where advertisers:
+   - Authenticate with Amazon through Login with Amazon (LWA)
+   - Manage Amazon advertising profiles, campaigns, Ads groups, metrics in database
+   - Generate API keys for each advertiser
+   - Thw web app all it does it Auth with LWA and pulls advertiser data and generated an API keys
+   - Token refresh, API life cycle is all managed in the webapp
+
+2. **MCP Server** - The Claude integration layer that allows advertisers to:
+   - Have natural language conversations about their ad performance
+   - Make campaign adjustments through simple commands
+   - Receive AI-powered recommendations and insights
+   - Analyze performance without needing to understand complex metrics
+   - Take actions directly within Claude Desktop
+
+This dual approach combines structured dashboard analytics with conversational AI capabilities, meeting advertisers where they work.
+
+## The Advertiser Journey
+
+1. **Onboarding & Authentication**
+   - Advertiser signs up on our web application
+   - Connects their Amazon Advertising account via LWA
+   - Web app exchanges OAuth code for access tokens
+   - System retrieves and stores profile data and campaign history
+
+2. **Data Analysis & Management**
+   - Web app provides traditional dashboard analytics
+   - Advertiser can view and manage campaigns through familiar interfaces
+   - System regularly syncs campaign data to maintain current metrics
+
+3. **AI-Powered Assistance**
+   - Advertiser generates an API key from the web application
+   - Configures Claude Desktop with the MCP server and API key
+   - Begins asking questions and managing campaigns conversationally
+   - Claude interprets data and presents insights in natural language
+
+## MCP Server Implementation
+
+### Architecture Overview
+
+The MCP server will be designed as a standalone Node.js application that:
+
+1. Validates advertiser API keys against our Supabase database
+2. Retrieves advertiser-specific campaign data
+3. Exposes standardized tools and resources through the MCP protocol
+4. Enables Claude to access and interpret campaign performance
+
+The server will use a service account to access Supabase, with all queries scoped to the authenticated advertiser's ID to maintain data isolation.
+
+### Implementation Phases
+
+#### Phase 1: Foundation & Authentication
+
+We'll begin by establishing the MCP server's core structure and authentication mechanism:
+
+1. Set up the TypeScript project with MCP SDK dependencies
+2. Implement API key validation against the Supabase `api_keys` table
+3. Create the advertiser context once authentication succeeds
+4. Establish secure connection to Supabase
+
+#### Phase 2: Data Access Layer
+
+Next, we'll develop a comprehensive data access layer:
+
+1. Create query functions for campaigns, metrics, and advertiser data
+2. Implement smart filtering by advertiser ID on all queries
+3. Build data aggregation utilities for metrics analysis
+4. Add caching for frequently accessed data
+
+#### Phase 3: MCP Resources & Tools
+
+With data access in place, we'll implement the MCP interface:
+
+1. Build campaign resources (listings, details, metrics)
+2. Create campaign management tools (pause, enable, archive)
+3. Implement budget adjustment tools with validation
+4. Develop performance analysis and recommendation tools
+
+#### Phase 4: Packaging & Distribution
+
+Finally, we'll prepare for distribution:
+
+1. Set up NPM packaging for easy installation
+2. Create user documentation and examples
+3. Implement versioning strategy
+4. Establish testing pipeline
+
+## Value Proposition for Advertisers
+
+The integration of our web application with Claude through the MCP server delivers unique value to advertisers:
+
+1. **Democratized Analytics** - Non-technical advertisers can access complex performance data through natural conversation
+2. **Contextual Insights** - Claude can interpret trends and suggest optimizations based on historical and current data
+3. **Operational Efficiency** - Advertisers can quickly make campaign adjustments without switching contexts
+4. **Reduced Learning Curve** - Natural language interface eliminates need to learn complex dashboard navigation
+5. **Proactive Management** - Claude can suggest optimizations based on performance patterns
+
+## Security & Privacy Considerations
+
+Throughout implementation, we'll maintain strict security practices:
+
+1. **Data Isolation** - Each advertiser's data is strictly isolated
+2. **Minimal Permissions** - Service accounts use row-level security with minimal access
+3. **Secure Authentication** - API keys are validated and never exposed
+4. **No Data Storage** - The MCP server doesn't store data locally
+
+## Next Steps
+
+The immediate actions will be:
+
+1. Finalize the web application's API key generation capability
+2. Create the MCP server repository and development environment
+3. Implement the core authentication and data access layers
+4. Develop initial tools and resources for campaign management
+5. Begin testing with Claude Desktop using sample advertiser accounts
+
+This implementation plan connects our existing web application with Claude's capabilities through a secure, focused MCP server, creating a powerful ecosystem for Amazon advertisers to manage and optimize their campaigns through both traditional interfaces and conversational AI.
