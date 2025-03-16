@@ -7,6 +7,15 @@ import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
+  // Add root endpoint for status check
+  app.get("/", (_req, res) => {
+    res.json({
+      status: "ok",
+      name: "Amazon Ads MCP Server",
+      version: "1.0.0"
+    });
+  });
+
   // Add simple health check endpoint
   app.get("/health", (_req, res) => {
     res.json({ status: "ok" });

@@ -2,12 +2,12 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { z } from "zod";
 import { db, pool } from "../db";
-import { users } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { advertisingProfiles, campaigns, adGroups, metrics, users } from "@shared/schema";
+import { eq, and, desc, gte, lte } from "drizzle-orm";
 
 // Create MCP server instance
 export const mcpServer = new McpServer({
-  name: "PostgreSQL-MCP",
+  name: "Amazon-Ads-MCP",
   version: "1.0.0"
 });
 
@@ -22,9 +22,9 @@ mcpServer.resource(
       WHERE table_schema = 'public'
       ORDER BY table_name, ordinal_position
     `;
-    
+
     const result = await pool.query(tablesQuery);
-    
+
     const schemaText = result.rows
       .reduce((acc: any[], row) => {
         const table = acc.find(t => t.table === row.table_name);
@@ -91,6 +91,129 @@ mcpServer.tool(
         content: [{
           type: "text",
           text: `Error: ${(error as Error).message}`
+        }],
+        isError: true
+      };
+    }
+  }
+);
+
+// Campaign Performance Analysis Tool
+mcpServer.tool(
+  "analyzeCampaignPerformance",
+  {
+    campaignId: z.string(),
+    dateRange: z.object({
+      start: z.string(),
+      end: z.string()
+    }).optional()
+  },
+  async ({ campaignId, dateRange }) => {
+    try {
+      const query = db.select({
+        campaign: campaigns,
+        metrics: metrics
+      })
+      .from(campaigns)
+      .leftJoin(metrics, eq(metrics.campaignId, campaigns.campaignId))
+      .where(eq(campaigns.campaignId, campaignId));
+
+      if (dateRange) {
+        query.where(and(
+          gte(metrics.date, new Date(dateRange.start)),
+          lte(metrics.date, new Date(dateRange.end))
+        ));
+      }
+
+      const results = await query;
+
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify(results, null, 2)
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: "text",
+          text: `Error analyzing campaign: ${(error as Error).message}`
+        }],
+        isError: true
+      };
+    }
+  }
+);
+
+// Ad Group Performance Tool
+mcpServer.tool(
+  "analyzeAdGroupPerformance",
+  {
+    adGroupId: z.string()
+  },
+  async ({ adGroupId }) => {
+    try {
+      const results = await db.select()
+        .from(adGroups)
+        .leftJoin(metrics, eq(metrics.adGroupId, adGroups.adGroupId))
+        .where(eq(adGroups.adGroupId, adGroupId))
+        .orderBy(desc(metrics.date));
+
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify(results, null, 2)
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: "text",
+          text: `Error analyzing ad group: ${(error as Error).message}`
+        }],
+        isError: true
+      };
+    }
+  }
+);
+
+// Budget Optimization Tool
+mcpServer.tool(
+  "optimizeBudget",
+  {
+    profileId: z.string()
+  },
+  async ({ profileId }) => {
+    try {
+      // Get all campaigns and their performance metrics
+      const results = await db.select()
+        .from(campaigns)
+        .leftJoin(metrics, eq(metrics.campaignId, campaigns.campaignId))
+        .where(eq(campaigns.profileId, profileId))
+        .orderBy(desc(metrics.roas));
+
+      // Simple budget optimization logic
+      const analysis = results.map(campaign => ({
+        campaignId: campaign.campaignId,
+        name: campaign.name,
+        currentBudget: campaign.budget,
+        roas: campaign.roas,
+        recommendation: campaign.roas > 2 ? 'Increase budget' : 
+                       campaign.roas < 1 ? 'Decrease budget' : 
+                       'Maintain budget'
+      }));
+
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify(analysis, null, 2)
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: "text",
+          text: `Error optimizing budget: ${(error as Error).message}`
         }],
         isError: true
       };

@@ -5,6 +5,7 @@ import { log } from "./vite";
 const app = express();
 app.use(express.json());
 
+// Add request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -20,11 +21,19 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
+  // Add error handling middleware
   app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-    res.status(status).json({ message });
-    throw err;
+
+    // Log error for debugging
+    console.error(err);
+
+    // Send formatted error response
+    res.status(status).json({ 
+      error: message,
+      statusCode: status
+    });
   });
 
   const port = 5000;
