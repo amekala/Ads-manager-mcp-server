@@ -21,6 +21,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok" });
   });
 
+  // Enable CORS for MCP endpoints
+  app.use("/mcp", (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    next();
+  });
+
   // Setup SSE endpoint for MCP
   app.get("/mcp/sse", async (req, res) => {
     const transport = new SSEServerTransport("/mcp/messages", res);
