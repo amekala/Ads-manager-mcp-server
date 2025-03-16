@@ -42,10 +42,10 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`MCP server running on port ${port}`);
+    log(`Ads Manager MCP server running on port ${port}`);
   });
 })();
 
-// Export MCP server for npm package
+// Export MCP server and types for npm package
 export { mcpServer } from "./mcp";
 export * from "@shared/schema";

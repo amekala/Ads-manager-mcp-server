@@ -1,19 +1,28 @@
 {
-  "name": "Amazon Ads Assistant",
-  "version": "1.0.0",
-  "description": "MCP configuration for Amazon Advertising data analysis",
-  "mcp": {
-    "endpoint": "https://mcp-server-sync-abhilashreddi.replit.app/mcp",
-    "transport": "sse",
-    "headers": {
-      "Authorization": "Bearer YOUR_AMAZON_ADS_API_TOKEN"
+  "globalShortcut": "",
+  "mcpServers": {
+    "ads-manager": {
+      "name": "Ads Manager Assistant",
+      "version": "1.0.0",
+      "description": "MCP Server for Advertising Management",
+      "command": "curl",
+      "args": [
+        "-N",
+        "--no-buffer",
+        "--max-time", "0",
+        "-H", "Accept: text/event-stream",
+        "-H", "Cache-Control: no-cache",
+        "-H", "Connection: keep-alive",
+        "-H", "Authorization: Bearer YOUR_API_KEY",
+        "https://mcp-server-sync-abhilashreddi.replit.app/mcp/sse"
+      ]
     }
   },
   "instructions": [
     "1. Save this file as claude-desktop-config.json",
-    "2. Replace YOUR_AMAZON_ADS_API_TOKEN with the token from your Amazon Ads web application",
-    "3. The MCP server is already deployed and configured with database access",
-    "4. No additional configuration is needed - the server handles all database connections"
+    "2. Replace YOUR_API_KEY with your API token.",
+    "3. This configuration uses the `curl` command to connect to the MCP server. Ensure `curl` is installed on your system.",
+    "4. The MCP server handles database connections."
   ],
   "capabilities": [
     "Campaign performance analysis",

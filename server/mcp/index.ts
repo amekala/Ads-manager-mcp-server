@@ -8,7 +8,7 @@ import { SQL } from "drizzle-orm";
 
 // Create MCP server instance
 const mcpServer = new McpServer({
-  name: "Amazon-Ads-MCP",
+  name: "Ads-Manager-MCP",
   version: "1.0.0"
 });
 

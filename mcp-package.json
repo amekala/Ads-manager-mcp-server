@@ -1,7 +1,7 @@
 {
-  "name": "amazon-ads-mcp",
+  "name": "ads-manager-mcp",
   "version": "1.0.0",
-  "description": "MCP server for Amazon Advertising data access",
+  "description": "MCP server for Advertising Management",
   "main": "dist/server/index.js",
   "types": "dist/server/index.d.ts",
   "type": "module",
@@ -33,7 +33,7 @@
   ],
   "keywords": [
     "mcp",
-    "amazon-advertising",
+    "advertising",
     "claude",
     "ai"
   ],
