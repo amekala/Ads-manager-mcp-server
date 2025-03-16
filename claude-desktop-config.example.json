@@ -1,39 +1,60 @@
 {
-  "globalShortcut": "",
+  "name": "Amazon Ads Manager",
+  "version": "1.0.4",
+  "description": "Connect to your Amazon Advertising data and analyze campaign performance",
   "mcpServers": {
     "ads-manager": {
-      "name": "Ads Manager Assistant",
-      "version": "1.0.0",
-      "description": "MCP Server for Advertising Management",
-      "command": "curl",
-      "args": [
-        "-N",
-        "--no-buffer",
-        "--max-time", "0",
-        "-H", "Accept: text/event-stream",
-        "-H", "Cache-Control: no-cache",
-        "-H", "Connection: keep-alive",
-        "-H", "Authorization: Bearer YOUR_API_KEY",
-        "https://mcp-server-sync-abhilashreddi.replit.app/mcp/sse"
-      ]
+      "name": "Ads Manager MCP Server",
+      "version": "1.0.4",
+      "description": "MCP Server for Amazon Advertising data analysis",
+      "transport": "sse",
+      "endpoint": "https://mcp-server-sync-abhilashreddi.replit.app/mcp/sse",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY_HERE"
+      }
     }
   },
-  "instructions": [
-    "1. Save this file as claude-desktop-config.json",
-    "2. Replace YOUR_API_KEY with your API token.",
-    "3. This configuration uses the `curl` command to connect to the MCP server. Ensure `curl` is installed on your system.",
-    "4. The MCP server handles database connections."
+  "capabilities": {
+    "resources": {
+      "schema": "View database schema and table structures",
+      "metrics": "Access advertising metrics and performance data",
+      "campaigns": "View campaign configurations and settings",
+      "adGroups": "Access ad group details and settings"
+    },
+    "tools": {
+      "analyzeCampaignPerformance": "Analyze campaign metrics and performance",
+      "analyzeAdGroupPerformance": "Get detailed ad group performance analysis",
+      "optimizeBudget": "Get budget optimization recommendations",
+      "query": "Run custom SQL queries against the database"
+    }
+  },
+  "examples": [
+    {
+      "description": "View database schema",
+      "query": "Show me the structure of all tables in the database"
+    },
+    {
+      "description": "Campaign analysis",
+      "query": "Analyze the performance of campaign ABC123 for the last 30 days"
+    },
+    {
+      "description": "Ad group metrics",
+      "query": "What are the key metrics for ad group XYZ789?"
+    },
+    {
+      "description": "Budget optimization",
+      "query": "Give me budget recommendations for all campaigns in profile P123"
+    }
   ],
-  "capabilities": [
-    "Campaign performance analysis",
-    "Ad group metrics tracking",
-    "Natural language queries for advertising data",
-    "Budget optimization recommendations"
-  ],
-  "example_queries": [
-    "Show me the database schema",
-    "What's the performance of campaign ABC123?",
-    "Analyze the metrics for ad group XYZ789",
-    "Give me budget recommendations for profile P123"
-  ]
+  "setup": {
+    "steps": [
+      "Save this file as claude-desktop-config.json in your Claude Desktop App configuration directory",
+      "Replace YOUR_API_KEY_HERE with your API key from the Ads Manager dashboard",
+      "Restart the Claude Desktop App to apply the configuration"
+    ],
+    "requirements": {
+      "apiKey": "Required: Get your API key from the Ads Manager dashboard",
+      "claudeDesktop": "Required: Claude Desktop App version 1.0.0 or higher"
+    }
+  }
 }

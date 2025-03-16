@@ -5,15 +5,26 @@ import { mcpServer } from "./mcp";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { validateApiKey } from "./middleware/auth";
 
+// Helper function to handle async middleware
+const asyncMiddleware = (fn: Function) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+
+  // Add error handling middleware
+  app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('Error in request:', err);
+    res.status(500).json({ error: err.message });
+  });
 
   // Add root endpoint for status check
   app.get("/", (_req, res) => {
     res.json({
       status: "ok",
       name: "Amazon Ads MCP Server",
-      version: "1.0.0"
+      version: "1.0.4"
     });
   });
 
@@ -37,7 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Setup SSE endpoint for MCP with API key validation and longer timeout
-  app.get("/mcp/sse", validateApiKey, async (req, res) => {
+  app.get("/mcp/sse", asyncMiddleware(validateApiKey), async (req, res) => {
     // Set headers for SSE
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -56,10 +67,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Setup endpoint for receiving MCP messages with API key validation
-  app.post("/mcp/messages", validateApiKey, express.json(), async (req, res) => {
+  app.post("/mcp/messages", asyncMiddleware(validateApiKey), express.json(), async (req, res) => {
     try {
-      // Handle incoming MCP message using the handleMessage method
-      await mcpServer.handleMessage(req.body);
+      // Create a temporary transport to handle the message
+      const tempTransport = new SSEServerTransport("/mcp/messages", res);
+      
+      // Use the transport's handleMessage method
+      await tempTransport.handleMessage(req.body);
+      
       res.json({ success: true });
     } catch (error) {
       console.error('Error handling MCP message:', error);

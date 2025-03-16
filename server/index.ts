@@ -1,6 +1,8 @@
 import express from "express";
 import { registerRoutes } from "./routes";
-import { log } from "./vite";
+
+// Simple logger function
+const log = (message: string) => console.log(`[Ads-MCP] ${message}`);
 
 const app = express();
 app.use(express.json());

@@ -224,13 +224,14 @@ mcpServer.tool(
 mcpServer.tool(
   "createUser",
   {
-    username: z.string(),
-    password: z.string()
+    email: z.string(),
+    password: z.string(),
+    role: z.string().optional()
   },
-  async ({ username, password }) => {
+  async ({ email, password, role }) => {
     try {
       const [user] = await db.insert(users)
-        .values({ username, password })
+        .values({ email, password, role })
         .returning();
         
       return {
@@ -254,7 +255,7 @@ mcpServer.tool(
 mcpServer.tool(
   "getUser",
   {
-    id: z.number()
+    id: z.string()
   },
   async ({ id }) => {
     try {

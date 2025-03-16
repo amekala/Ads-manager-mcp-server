@@ -1,6 +1,6 @@
 {
   "name": "ads-manager-mcp",
-  "version": "1.0.4",
+  "version": "1.0.0",
   "description": "MCP server for Advertising Management",
   "main": "dist/server/index.js",
   "types": "dist/server/index.d.ts",
@@ -14,9 +14,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",
     "@neondatabase/serverless": "^0.10.4",
-    "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.3",
-    "drizzle-zod": "^0.7.0",
     "express": "^4.21.2",
     "ws": "^8.18.1",
     "zod": "^3.23.8"
