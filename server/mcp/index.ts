@@ -314,3 +314,62 @@ mcpServer.tool(
     }
   }
 );
+
+// Add Performance Trends Analysis Tool after the existing tools
+mcpServer.tool(
+  "analyzeTrends",
+  {
+    profileId: z.string(),
+    dateRange: z.object({
+      start: z.string(),
+      end: z.string()
+    })
+  },
+  async ({ profileId, dateRange }) => {
+    try {
+      const results = await db.select()
+        .from(metrics)
+        .where(and(
+          eq(metrics.profileId, profileId),
+          gte(metrics.date, new Date(dateRange.start)),
+          lte(metrics.date, new Date(dateRange.end))
+        ))
+        .orderBy(metrics.date);
+
+      // Calculate trends
+      const trends = {
+        impressions: {
+          total: results.reduce((sum, r) => sum + r.impressions, 0),
+          daily: results.map(r => ({ date: r.date, value: r.impressions }))
+        },
+        clicks: {
+          total: results.reduce((sum, r) => sum + r.clicks, 0),
+          daily: results.map(r => ({ date: r.date, value: r.clicks }))
+        },
+        spend: {
+          total: results.reduce((sum, r) => Number(sum) + Number(r.spend), 0),
+          daily: results.map(r => ({ date: r.date, value: r.spend }))
+        },
+        roas: {
+          average: results.reduce((sum, r) => Number(sum) + Number(r.roas || 0), 0) / results.length,
+          daily: results.map(r => ({ date: r.date, value: r.roas }))
+        }
+      };
+
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify(trends, null, 2)
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: "text",
+          text: `Error analyzing trends: ${(error as Error).message}`
+        }],
+        isError: true
+      };
+    }
+  }
+);

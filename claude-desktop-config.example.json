@@ -3,21 +3,28 @@
   "version": "1.0.0",
   "description": "MCP configuration for Amazon Advertising data analysis",
   "mcp": {
-    "endpoint": "http://localhost:5000/mcp",
+    "endpoint": "https://mcp-server-sync-abhilashreddi.replit.app/mcp",
     "transport": "sse",
     "headers": {
       "Authorization": "Bearer YOUR_AMAZON_ADS_API_TOKEN"
     }
   },
   "instructions": [
-    "1. Replace localhost:5000 with your deployed MCP server URL",
+    "1. Save this file as claude-desktop-config.json",
     "2. Replace YOUR_AMAZON_ADS_API_TOKEN with the token from your Amazon Ads web application",
-    "3. The MCP server handles database credentials internally - no additional configuration needed"
+    "3. The MCP server is already deployed and configured with database access",
+    "4. No additional configuration is needed - the server handles all database connections"
   ],
   "capabilities": [
     "Campaign performance analysis",
     "Ad group metrics tracking",
     "Natural language queries for advertising data",
     "Budget optimization recommendations"
+  ],
+  "example_queries": [
+    "Show me the database schema",
+    "What's the performance of campaign ABC123?",
+    "Analyze the metrics for ad group XYZ789",
+    "Give me budget recommendations for profile P123"
   ]
 }

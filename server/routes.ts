@@ -3,6 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { mcpServer } from "./mcp";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { validateApiKey } from "./middleware/auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -26,17 +27,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      res.header('Access-Control-Max-Age', '86400'); // 24 hours
+      return res.status(204).end();
+    }
     next();
   });
 
-  // Setup SSE endpoint for MCP
-  app.get("/mcp/sse", async (req, res) => {
+  // Setup SSE endpoint for MCP with API key validation
+  app.get("/mcp/sse", validateApiKey, async (req, res) => {
+    // Set headers for SSE
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    });
+
     const transport = new SSEServerTransport("/mcp/messages", res);
     await mcpServer.connect(transport);
   });
 
-  // Setup endpoint for receiving MCP messages
-  app.post("/mcp/messages", express.json(), async (req, res) => {
+  // Setup endpoint for receiving MCP messages with API key validation
+  app.post("/mcp/messages", validateApiKey, express.json(), async (req, res) => {
     try {
       const result = await mcpServer.receive(req.body);
       res.json(result);
