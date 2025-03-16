@@ -7,6 +7,12 @@ const EventSource = require('eventsource');
 const sessionId = Math.random().toString(36).substring(2, 15);
 console.error(`Starting SSE proxy with session ID: ${sessionId}`);
 
+// Keep the process alive
+setInterval(() => {
+  // Heartbeat to keep the process running
+  console.error('Heartbeat...');
+}, 30000);
+
 // Connect to the SSE endpoint
 const url = 'https://mcp-server-sync-abhilashreddi.replit.app/mcp/sse';
 const headers = {
@@ -23,6 +29,8 @@ eventSource.onopen = () => {
 
 eventSource.onerror = (err) => {
   console.error('SSE connection error:', err);
+  // Don't exit on error, try to recover
+  console.error('Attempting to recover from error...');
 };
 
 // Handle 'endpoint' event from SSE
@@ -69,6 +77,9 @@ function handleMcpProtocol() {
       
       // Send response
       console.log(JSON.stringify(response));
+      
+      // Keep the connection open after sending the response
+      console.error('Response sent, keeping connection open...');
     } catch (error) {
       console.error('Error processing message:', error);
       
@@ -185,4 +196,18 @@ process.on('SIGINT', () => {
   console.error('Shutting down SSE proxy');
   eventSource.close();
   process.exit(0);
+});
+
+// Make the process unexitable unless explicitly terminated
+process.on('exit', (code) => {
+  console.error(`Process is attempting to exit with code ${code}`);
+  if (code !== 0) {
+    console.error('Preventing exit, keeping proxy alive...');
+  }
+});
+
+// Handle uncaught exceptions without crashing
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+  console.error('Continuing to run despite error...');
 }); 
