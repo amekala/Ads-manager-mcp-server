@@ -52,9 +52,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup endpoint for receiving MCP messages with API key validation
   app.post("/mcp/messages", validateApiKey, express.json(), async (req, res) => {
     try {
-      const result = await mcpServer.receive(req.body);
-      res.json(result);
+      // Handle incoming MCP message
+      const message = req.body;
+      const response = await mcpServer.handleMessage(message);
+      res.json(response);
     } catch (error) {
+      console.error('Error handling MCP message:', error);
       res.status(500).json({
         error: (error as Error).message
       });
