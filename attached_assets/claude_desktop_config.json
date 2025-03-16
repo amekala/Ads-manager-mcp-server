@@ -9,7 +9,11 @@
       "args": [
         "-N",
         "--no-buffer",
-        "--max-time", "0",
+        "--max-time", "300",
+        "--connect-timeout", "60",
+        "--retry", "3",
+        "--retry-delay", "2",
+        "--retry-max-time", "120",
         "-H", "Accept: text/event-stream",
         "-H", "Cache-Control: no-cache",
         "-H", "Connection: keep-alive",
