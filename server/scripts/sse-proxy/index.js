@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
 const net = require('net');
 const readline = require('readline');
 
@@ -8,52 +7,63 @@ const readline = require('readline');
 const sessionId = Math.random().toString(36).substring(2, 15);
 console.error(`Starting MCP server with session ID: ${sessionId}`);
 
-// Create a server to handle MCP protocol
-const server = net.createServer((socket) => {
-  console.error('Client connected');
-  
-  // Prepare to read messages from the client
-  const rl = readline.createInterface({
-    input: socket,
-    output: socket,
-    terminal: false
+// Try multiple ports in case of conflicts
+let currentPort = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT) : 7891;
+const maxPortAttempts = 10;
+
+// Create server
+function createServer(port) {
+  // Create a server to handle MCP protocol
+  const server = net.createServer((socket) => {
+    console.error('Client connected');
+    
+    // Prepare to read messages from the client
+    const rl = readline.createInterface({
+      input: socket,
+      output: socket,
+      terminal: false
+    });
+    
+    // Handle messages from the client
+    rl.on('line', (line) => {
+      try {
+        if (!line.trim()) return;
+        
+        console.error(`Received line: ${line}`);
+        const message = JSON.parse(line);
+        
+        // Process the message
+        handleMessage(message, socket);
+      } catch (error) {
+        console.error('Error processing message:', error);
+        
+        // Send error response
+        const errorResponse = {
+          jsonrpc: "2.0",
+          error: {
+            code: -32700,
+            message: 'Parse error'
+          },
+          id: null
+        };
+        
+        socket.write(JSON.stringify(errorResponse) + '\n');
+      }
+    });
+    
+    // Handle client disconnection
+    socket.on('close', () => {
+      console.error('Client disconnected');
+    });
+    
+    // Handle errors
+    socket.on('error', (err) => {
+      console.error('Socket error:', err);
+    });
   });
-  
-  // Handle messages from the client
-  rl.on('line', (line) => {
-    try {
-      console.error(`Received line: ${line}`);
-      const message = JSON.parse(line);
-      
-      // Process the message
-      handleMessage(message, socket);
-    } catch (error) {
-      console.error('Error processing message:', error);
-      
-      // Send error response
-      const errorResponse = {
-        error: {
-          code: -32700,
-          message: 'Parse error'
-        },
-        jsonrpc: '2.0',
-        id: null
-      };
-      
-      socket.write(JSON.stringify(errorResponse) + '\n');
-    }
-  });
-  
-  // Handle client disconnection
-  socket.on('close', () => {
-    console.error('Client disconnected');
-  });
-  
-  // Handle errors
-  socket.on('error', (err) => {
-    console.error('Socket error:', err);
-  });
-});
+
+  return server;
+}
 
 // Handle MCP protocol messages
 function handleMessage(message, socket) {
@@ -68,11 +78,11 @@ function handleMessage(message, socket) {
   } else {
     // Method not supported
     const response = {
+      jsonrpc: "2.0",
       error: {
         code: -32601,
         message: `Method not found: ${message.method}`
       },
-      jsonrpc: '2.0',
       id: message.id
     };
     
@@ -85,6 +95,7 @@ function handleInitialize(message, socket) {
   console.error(`Handling initialize for client ${message.id}`);
   
   const response = {
+    jsonrpc: "2.0",
     result: {
       serverInfo: {
         name: 'Amazon Ads Manager',
@@ -96,7 +107,6 @@ function handleInitialize(message, socket) {
         tools: ['analyzeCampaignPerformance', 'analyzeAdGroupPerformance', 'optimizeBudget', 'query']
       }
     },
-    jsonrpc: '2.0',
     id: message.id
   };
   
@@ -109,6 +119,7 @@ function handleToolsList(message, socket) {
   console.error(`Handling tools/list for client ${message.id}`);
   
   const response = {
+    jsonrpc: "2.0",
     result: {
       tools: [
         {
@@ -145,7 +156,6 @@ function handleToolsList(message, socket) {
         }
       ]
     },
-    jsonrpc: '2.0',
     id: message.id
   };
   
@@ -159,6 +169,7 @@ function handleToolsCall(message, socket) {
   console.error(`Handling tools/call with params: ${JSON.stringify(params)}`);
   
   const response = {
+    jsonrpc: "2.0",
     result: {
       content: [
         {
@@ -171,7 +182,6 @@ function handleToolsCall(message, socket) {
         }
       ]
     },
-    jsonrpc: '2.0',
     id: message.id
   };
   
@@ -179,39 +189,61 @@ function handleToolsCall(message, socket) {
   console.error(`Tools/call response sent to client ${message.id}`);
 }
 
-// Start the server
-const PORT = process.env.MCP_PORT || 7891;
-server.listen(PORT, '127.0.0.1', () => {
-  console.error(`MCP server listening on port ${PORT}`);
-  
-  // Signal that we're ready - this allows Claude to connect to us
-  console.log(JSON.stringify({
-    port: PORT,
-    protocol: 'mcp'
-  }));
-});
+// Start the server with port fallback logic
+function startServer(attempt = 0) {
+  if (attempt >= maxPortAttempts) {
+    console.error(`Failed to start server after ${maxPortAttempts} attempts.`);
+    process.exit(1);
+    return;
+  }
 
-// Handle server errors
-server.on('error', (err) => {
-  console.error('Server error:', err);
-});
+  const port = currentPort + attempt;
+  const server = createServer(port);
 
-// Handle process exit
-process.on('exit', () => {
-  console.error('Process exiting, shutting down server');
-  server.close();
-});
-
-// Handle signals
-process.on('SIGINT', () => {
-  console.error('Received SIGINT, shutting down server');
-  server.close(() => {
-    process.exit(0);
+  server.on('error', (err) => {
+    console.error(`Server error on port ${port}:`, err);
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${port} is in use, trying next port...`);
+      startServer(attempt + 1);
+    }
   });
-});
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught exception:', err);
-  // Don't exit, try to keep the server running
-}); 
+  server.listen(port, '127.0.0.1', () => {
+    console.error(`MCP server listening on port ${port}`);
+    
+    // Output the port information to stdout for Claude to connect
+    console.log(JSON.stringify({
+      jsonrpc: "2.0",
+      result: {
+        port: port,
+        protocol: 'mcp'
+      },
+      id: "startup"
+    }));
+  });
+
+  // Handle process exit
+  process.on('exit', () => {
+    console.error('Process exiting, shutting down server');
+    server.close();
+  });
+
+  // Handle signals
+  process.on('SIGINT', () => {
+    console.error('Received SIGINT, shutting down server');
+    server.close(() => {
+      process.exit(0);
+    });
+  });
+
+  // Handle uncaught exceptions
+  process.on('uncaughtException', (err) => {
+    console.error('Uncaught exception:', err);
+    // Don't exit, try to keep the server running
+  });
+
+  return server;
+}
+
+// Start the server
+startServer(); 

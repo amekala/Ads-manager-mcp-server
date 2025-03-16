@@ -12,6 +12,7 @@
       "env": {
         "DEBUG": "true",
         "MCP_PORT": "7891",
+        "NODE_ENV": "production",
         "MCP_PROTOCOL_VERSION": "2024-11-05"
       }
     }
