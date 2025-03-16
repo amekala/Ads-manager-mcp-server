@@ -1,0 +1,24 @@
+Node.js v20.10.0
+2025-03-14T19:32:55.469Z [amazon-ads] [info] Server transport closed
+2025-03-14T19:32:55.469Z [amazon-ads] [info] Client transport closed
+2025-03-14T19:32:55.470Z [amazon-ads] [info] Server transport closed unexpectedly, this is likely due to the process exiting early. If you are developing this MCP server you can add output to stderr (i.e. `console.error('...')` in JavaScript, `print('...', file=sys.stderr)` in python) and it will appear in this log.
+2025-03-14T19:32:55.470Z [amazon-ads] [error] Server disconnected. For troubleshooting guidance, please visit our [debugging documentation](https://modelcontextprotocol.io/docs/tools/debugging) {"context":"connection"}
+2025-03-14T19:32:55.470Z [amazon-ads] [info] Client transport closed
+2025-03-16T19:57:23.195Z [amazon-ads] [info] Initializing server...
+2025-03-16T19:57:23.210Z [amazon-ads] [info] Server started and connected successfully
+2025-03-16T19:57:23.214Z [amazon-ads] [info] Message from client: {"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"claude-ai","version":"0.1.0"}},"jsonrpc":"2.0","id":0}
+curl: try 'curl --help' or 'curl --manual' for more information
+2025-03-16T19:57:23.260Z [amazon-ads] [info] Server transport closed
+2025-03-16T19:57:23.260Z [amazon-ads] [info] Client transport closed
+2025-03-16T19:57:23.260Z [amazon-ads] [info] Server transport closed unexpectedly, this is likely due to the process exiting early. If you are developing this MCP server you can add output to stderr (i.e. `console.error('...')` in JavaScript, `print('...', file=sys.stderr)` in python) and it will appear in this log.
+2025-03-16T19:57:23.260Z [amazon-ads] [error] Server disconnected. For troubleshooting guidance, please visit our [debugging documentation](https://modelcontextprotocol.io/docs/tools/debugging) {"context":"connection"}
+2025-03-16T19:57:23.261Z [amazon-ads] [info] Client transport closed
+2025-03-16T19:57:23.901Z [amazon-ads] [info] Initializing server...
+2025-03-16T19:57:24.259Z [amazon-ads] [info] Server started and connected successfully
+2025-03-16T19:57:24.260Z [amazon-ads] [info] Message from client: {"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"claude-ai","version":"0.1.0"}},"jsonrpc":"2.0","id":0}
+curl: try 'curl --help' or 'curl --manual' for more information
+2025-03-16T19:57:24.319Z [amazon-ads] [info] Server transport closed
+2025-03-16T19:57:24.319Z [amazon-ads] [info] Client transport closed
+2025-03-16T19:57:24.319Z [amazon-ads] [info] Server transport closed unexpectedly, this is likely due to the process exiting early. If you are developing this MCP server you can add output to stderr (i.e. `console.error('...')` in JavaScript, `print('...', file=sys.stderr)` in python) and it will appear in this log.
+2025-03-16T19:57:24.319Z [amazon-ads] [error] Server disconnected. For troubleshooting guidance, please visit our [debugging documentation](https://modelcontextprotocol.io/docs/tools/debugging) {"context":"connection"}
+2025-03-16T19:57:24.319Z [amazon-ads] [info] Client transport closed

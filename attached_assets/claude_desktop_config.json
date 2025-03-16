@@ -4,31 +4,17 @@
     "amazon-ads": {
       "name": "Amazon Ads Assistant",
       "version": "1.0.0",
-      "description": "MCP configuration for Amazon Advertising data analysis",
+      "description": "MCP Server for Amazon Advertising",
       "command": "curl",
-      "args": [],
-      "mcp": {
-        "endpoint": "https://mcp-server-sync-abhilashreddi.replit.app/mcp",
-        "transport": "sse",
-        "headers": {
-          "Authorization": "Bearer mDT3YY27XvHYeqvthyWenpI8WE78Ljxf"
-        }
-      },
-      "instructions": [
-        "The MCP server is already deployed and configured with database access",
-        "No additional configuration is needed - the server handles all database connections"
-      ],
-      "capabilities": [
-        "Campaign performance analysis",
-        "Ad group metrics tracking",
-        "Natural language queries for advertising data",
-        "Budget optimization recommendations"
-      ],
-      "example_queries": [
-        "Show me the database schema",
-        "What's the performance of campaign ABC123?",
-        "Analyze the metrics for ad group XYZ789",
-        "Give me budget recommendations for profile P123"
+      "args": [
+        "-N",
+        "--no-buffer",
+        "--max-time", "0",
+        "-H", "Accept: text/event-stream",
+        "-H", "Cache-Control: no-cache",
+        "-H", "Connection: keep-alive",
+        "-H", "Authorization: Bearer mDT3YY27XvHYeqvthyWenpI8WE78Ljxf",
+        "https://mcp-server-sync-abhilashreddi.replit.app/mcp/sse"
       ]
     }
   }

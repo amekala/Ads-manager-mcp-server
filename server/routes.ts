@@ -36,7 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
-  // Setup SSE endpoint for MCP with API key validation
+  // Setup SSE endpoint for MCP with API key validation and longer timeout
   app.get("/mcp/sse", validateApiKey, async (req, res) => {
     // Set headers for SSE
     res.writeHead(200, {
@@ -44,6 +44,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive'
     });
+
+    // Set a longer timeout for the connection
+    req.socket.setTimeout(0);
+    res.socket?.setTimeout(0);
+    req.socket.setNoDelay(true);
+    req.socket.setKeepAlive(true);
 
     const transport = new SSEServerTransport("/mcp/messages", res);
     await mcpServer.connect(transport);
@@ -54,8 +60,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Handle incoming MCP message
       const message = req.body;
-      const response = await mcpServer.handleMessage(message);
-      res.json(response);
+      await mcpServer.handleMessage(message);
+      res.json({ success: true });
     } catch (error) {
       console.error('Error handling MCP message:', error);
       res.status(500).json({
