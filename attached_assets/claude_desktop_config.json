@@ -5,14 +5,9 @@
       "name": "Ads Manager MCP Server",
       "version": "1.0.4",
       "description": "MCP Server for Amazon Advertising data analysis",
-      "command": "/usr/bin/curl",
+      "command": "node",
       "args": [
-        "-N",
-        "--no-buffer",
-        "-H", "Accept: text/event-stream",
-        "-H", "Cache-Control: no-cache", 
-        "-H", "Authorization: mDT3YY27XvHYeqvthyWenpI8WE78Ljxf",
-        "https://mcp-server-sync-abhilashreddi.replit.app/mcp/sse"
+        "${HOME}/Desktop/open-ai-projects/Ads-manager-mcp-server/server/scripts/sse-proxy/index.js"
       ],
       "env": {
         "DEBUG": "true",

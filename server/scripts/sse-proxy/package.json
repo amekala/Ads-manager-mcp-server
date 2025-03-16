@@ -1,0 +1,13 @@
+{
+  "name": "ads-manager-sse-proxy",
+  "version": "1.0.0",
+  "description": "SSE to MCP proxy for Amazon Ads Manager",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "eventsource": "^2.0.2"
+  }
+} 
